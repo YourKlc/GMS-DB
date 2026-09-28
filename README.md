@@ -1,2 +1,23 @@
 # GMS-DB
-A Q&amp;A skill for Global MapleStory (GMS) to store, search and manage manually maintained game data.
+> 
+> Global MapleStory (GMS) Player Q&A Skill
+
+## 项目简介
+
+`GMS-DB` 是面向冒险岛国际服（Global MapleStory / GMS）玩家答疑的 AI Skill，配套本地游戏资料库。
+本模块负责游戏资料的结构化存储、检索与条目管理。当玩家咨询职业、装备、道具、任务、地图、Boss、玩法机制、数值、攻略等游戏相关问题时，提供资料查询能力；同时支持录入新游戏资料、补充缺失条目、维护已有数据。
+
+所有数据由人工录入、核验与维护，**不会主动联网爬取、收集网络数据**。初始数据由 Drytron 录入维护。
+
+## 功能特性
+
+- 📖 游戏资料检索：职业、装备、道具、任务、地图、Boss、机制、数值、攻略查询
+- 📝 条目管理：新增、编辑、补全、归档游戏资料
+- 🗄️ 本地存储：全部资料本地保存，无自动网络采集行为
+- 🤖 AI Skill：作为答疑能力模块，支撑玩家问答场景
+
+## ⚠️ 重要免责声明
+
+本项目为玩家社区爱好者开发的非官方工具，**和 Nexon 无任何关联**。
+MapleStory、冒险岛 以及相关游戏商标、游戏原始文本、素材版权归属 Nexon。
+本项目开源许可证（Apache License 2.0）**仅适用于本项目代码本身**，不包含游戏原作相关的资料版权。
