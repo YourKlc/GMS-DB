@@ -9,8 +9,9 @@ description: 冒险岛国际服（MapleStory Global/GMS）玩家答疑的本地�
 
 ## 数据库文件
 
-- 主库：`assets/maplestory_db.json`（唯一权威数据源，见 `references/schema.md` 了解结构与条目类型）
-- 所有读写操作都以该文件为准；每次改动后保持 JSON 合法、键名与 schema 一致。
+- 数据目录：`assets/`，该目录下**所有 `*.json` 文件**都是有效数据源（如 `maplestory_db.json`、`auto_db.json` 等），结构与条目类型见 `references/schema.md`。
+- **查询**：默认扫描 `assets/` 下全部 `*.json` 并跨库合并结果，每条命中标注其来源文件（`db=`）；也可用 `--db <文件>` 指定只查单个库。
+- **写入**：默认写入 `assets/maplestory_db.json`；如需写入其他库，用 `--db <文件>` 指定。每次改动后保持 JSON 合法、键名与 schema 一致。
 
 ## 核心原则
 
@@ -35,8 +36,8 @@ description: 冒险岛国际服（MapleStory Global/GMS）玩家答疑的本地�
 
 玩家提问时按以下顺序处理：
 
-1. 先跑 `scripts/search_db.py "<关键词>"` 检索数据库（精确 + 模糊匹配名称/标签/内容）。
-2. 命中 → 返回条目内容，注明出处（`source`）与录入时间；多条命中时按相关度排序、去重后列全。
+1. 先跑 `scripts/search_db.py "<关键词>"` 检索数据库——**默认会扫描 `assets/` 目录下全部 `*.json`**（如 `maplestory_db.json`、`auto_db.json`），跨库匹配名称/标签/内容，命中结果会标注来源文件（`db=`）。
+2. 命中 → 返回条目内容，注明出处（来源文件 `db`、`source`）与录入时间；多条命中时按相关度排序、去重后列全。
 3. 未命中 → 明确回答「库中暂无该信息」，并提示可请用户补充录入，或询问是否授权去收集。
 
 ### 3. 收集模式（仅当用户明确要求）
@@ -56,9 +57,9 @@ description: 冒险岛国际服（MapleStory Global/GMS）玩家答疑的本地�
 
 ## 脚本
 
-- `scripts/search_db.py`：按关键词检索数据库（支持 `--type` 过滤、`--name` 精确匹配）。
-- `scripts/add_entry.py`：向数据库追加条目并做结构校验。
-- 脚本都默认读写 `assets/maplestory_db.json`。
+- `scripts/search_db.py`：按关键词检索数据库（**默认搜索 `assets/` 下所有 `*.json`**；支持 `--type` 过滤、`--name` 精确匹配、`--db` 指定单库文件）。
+- `scripts/add_entry.py`：向数据库追加条目并做结构校验（默认写入 `assets/maplestory_db.json`，可用 `--db` 指定其他库）。
+- 脚本默认读写 `assets/` 目录下的 JSON 数据库。
 
 ## 参考
 
