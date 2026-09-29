@@ -75,6 +75,11 @@ def main():
         print("WARNING: content is empty; will record entry with empty details")
 
     db_path = os.path.abspath(args.db)
+    assets_dir = os.path.normpath(os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), os.pardir, "assets"))
+    if not db_path.startswith(assets_dir + os.sep) and db_path != assets_dir:
+        print(f"ERROR: --db must be inside assets/ directory. Refused path: {db_path}")
+        sys.exit(1)
     db = load_db(db_path)
 
     # duplicate check on name_zh (merge, don't auto-add)
