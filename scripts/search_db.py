@@ -6,11 +6,16 @@ By default it scans every *.json file under the assets/ directory and searches
 across all of them (maplestory_db.json, auto_db.json, ...). Each hit is tagged
 with the file it came from.
 
+Context filtering: entries tagged as season/context-locked (e.g. tag "CW限定")
+are hidden when the query is unrelated to that context. Asking about CW/H凯
+keeps them visible; use --all to force showing everything.
+
 Usage:
   python search_db.py "<keyword>"                 # fuzzy search all assets/*.json
   python search_db.py "" --type item              # list all entries of a type (across all db)
-  python search_db.py "紫苹果" --name              # exact name match (across all db)
+  python search_db.py "紫苹果" --name              # exact name match (across all)
   python search_db.py "凶星" --db assets/auto_db.json   # search a single custom db file
+  python search_db.py "辉耀" --all                 # include context-locked entries
 """
 import argparse
 import glob
@@ -21,6 +26,10 @@ import sys
 ASSETS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           os.pardir, "assets")
 
+# Query substrings that indicate the user is asking in the CW-season context.
+CW_CONTEXT_KEYWORDS = ["cw", "挑战", "冠军", "赛季", "champion",
+                       "h凯", "困凯", "困难凯"]
+
 
 def load_db(path):
     with open(path, "r", encoding="utf-8-sig") as f:
@@ -29,6 +38,16 @@ def load_db(path):
 
 def norm(s):
     return (s or "").strip().lower()
+
+
+def is_cw_context(keyword):
+    k = norm(keyword)
+    return any(w in k for w in CW_CONTEXT_KEYWORDS)
+
+
+def is_cw_locked(entry):
+    """An entry carrying the tag 'CW限定' only exists in the CW season."""
+    return any(norm(t) == "cw限定" for t in entry.get("tags", []))
 
 
 def match(entry, keyword, exact_name=False):
@@ -67,6 +86,8 @@ def main():
     ap.add_argument("keyword", nargs="?", default="")
     ap.add_argument("--type", default=None, help="filter by entry type")
     ap.add_argument("--name", action="store_true", help="exact name match")
+    ap.add_argument("--all", action="store_true",
+                    help="show every entry, including context-locked (e.g. CW-season-only) entries")
     ap.add_argument("--db", default=ASSETS_DIR,
                     help="db file or assets dir to search (default: all assets/*.json)")
     args = ap.parse_args()
@@ -75,6 +96,9 @@ def main():
     if not db_paths:
         print(f"ERROR: no json database found under: {os.path.abspath(args.db)}")
         sys.exit(1)
+
+    # Hide context-locked entries unless the query is in that context or --all is given.
+    hide_locked = not args.all and not is_cw_context(args.keyword)
 
     results = []
     for db_path in db_paths:
@@ -87,6 +111,8 @@ def main():
         for e in db.get("entries", []):
             if args.type and norm(e.get("type")) != norm(args.type):
                 continue
+            if hide_locked and is_cw_locked(e):
+                continue
             if match(e, args.keyword, exact_name=args.name):
                 results.append((db_file, e))
 
@@ -95,6 +121,8 @@ def main():
         sys.exit(0)
 
     print(f"SEARCHED {len(db_paths)} db file(s): {', '.join(os.path.basename(p) for p in db_paths)}")
+    if hide_locked:
+        print("CONTEXT: context-locked entries hidden (use --all to show them)")
     for i, (db_file, e) in enumerate(results, 1):
         print(f"[{i}] id={e.get('id')} type={e.get('type')}  db={db_file}")
         print(f"    name_zh={e.get('name_zh')}  name_en={e.get('name_en')}")
